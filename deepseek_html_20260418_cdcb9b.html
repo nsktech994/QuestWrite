@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Answre Box | Dual Customization: Text + UML Diagram</title>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Mermaid.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+    <!-- html2pdf for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4fa 0%, #e8eef5 100%);
+            font-family: 'Inter', sans-serif;
+            padding: 1.5rem;
+            color: #11212e;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .hero {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(125deg, #1a4c6e, #2c7cb0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .tagline {
+            color: #4f6f8f;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* API Card */
+        .api-card {
+            background: #ffffffdd;
+            backdrop-filter: blur(4px);
+            border-radius: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border: 1px solid #ffe0b5;
+        }
+        .api-input-group {
+            display: flex;
+            gap: 10px;
+            flex: 2;
+        }
+        .api-input-group input {
+            flex: 2;
+            padding: 0.6rem 1rem;
+            border-radius: 60px;
+            border: 1px solid #ffcf9a;
+            font-family: monospace;
+        }
+        .api-input-group button {
+            background: #f39c12;
+            border: none;
+            padding: 0 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .api-input-group button:hover {
+            background: #e67e22;
+        }
+        .api-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Query Card */
+        .query-card {
+            background: rgba(255,255,250,0.92);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.05);
+        }
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        textarea {
+            flex: 1;
+            border: 1px solid #cbdde9;
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            font-family: 'Inter', monospace;
+            resize: vertical;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #2c7cb0;
+            box-shadow: 0 0 0 3px rgba(44,124,176,0.1);
+        }
+        .btn-ask {
+            background: #1e3a4d;
+            color: white;
+            border: none;
+            border-radius: 3rem;
+            padding: 0 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+        .btn-ask:hover:not(:disabled) {
+            background: #0f2e40;
+            transform: translateY(-2px);
+        }
+        .btn-ask:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .customization-bar {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .style-options {
+            display: flex;
+            gap: 10px;
+        }
+        .style-btn {
+            background: #eef2f7;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .style-btn.active {
+            background: #1f5e83;
+            color: white;
+        }
+        .uml-type-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ecf3f9;
+            padding: 0.3rem 1rem;
+            border-radius: 3rem;
+        }
+        .uml-type-selector label {
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        #umlTypeSelect {
+            background: white;
+            border: 1px solid #bdd4e8;
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .example-prompts {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+        .example-chip {
+            background: #eef3fc;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .example-chip:hover {
+            background: #dce6f0;
+            transform: scale(0.98);
+        }
+
+        /* Dual Customization Panels (Text + UML) */
+        .dual-customizer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .customizer-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 1rem 1.2rem;
+            flex: 1;
+            min-width: 240px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2edf5;
+        }
+        .customizer-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1f5e83;
+            border-bottom: 1px solid #e0ecf5;
+            padding-bottom: 6px;
+        }
+        .customizer-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .customizer-row label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 60px;
+        }
+        .customizer-row input, .customizer-row select {
+            padding: 0.3rem 0.6rem;
+            border-radius: 1rem;
+            border: 1px solid #ccc;
+            font-size: 0.75rem;
+        }
+        .color-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid #aaa;
+            cursor: pointer;
+        }
+        .export-btn {
+            background: #eef2f7;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.3rem 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .export-btn:hover {
+            background: #dce4ec;
+        }
+
+        /* Answer Zone */
+        .answer-zone {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        .text-answer-panel, .uml-panel {
+            background: white;
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            flex: 1;
+            min-width: 280px;
+            transition: all 0.2s;
+        }
+        .panel-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid #2c6e9e;
+            padding-left: 14px;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .answer-content {
+            line-height: 1.6;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+        }
+        .uml-diagram {
+            background: #fbfeff;
+            border-radius: 1rem;
+            padding: 1rem;
+            overflow-x: auto;
+            min-height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .loader {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 2rem;
+        }
+        .error-msg {
+            background: #ffe8e6;
+            border-left: 5px solid #e5484d;
+            padding: 1rem;
+            border-radius: 1rem;
+        }
+        
+        /* Footer with "All The Best" */
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c6e9e;
+            background: rgba(255,255,255,0.6);
+            border-radius: 3rem;
+            backdrop-filter: blur(4px);
+            letter-spacing: 0.5px;
+        }
+        footer i {
+            margin: 0 6px;
+            color: #e67e22;
+        }
+        
+        @media (max-width: 860px) {
+            body { padding: 1rem; }
+            .dual-customizer { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="hero">
+        <h1><i class="fas fa-sliders-h"></i> Answre Box</h1>
+        <div class="tagline">OpenRouter AI · Dual Customization (Text + UML) · Live Style Editing After Generation</div>
+    </div>
+
+    <!-- API Key Row -->
+    <div class="api-card">
+        <div class="api-input-group">
+            <input type="password" id="apiKeyInput" placeholder="OpenRouter API Key (sk-or-v1-...)" autocomplete="off">
+            <button id="saveApiKeyBtn"><i class="fas fa-save"></i> Save</button>
+        </div>
+        <div id="apiStatus" class="api-status">🔑 No key</div>
+    </div>
+
+    <!-- Question & Style + UML Type -->
+    <div class="query-card">
+        <div class="input-group">
+            <textarea id="questionInput" rows="2" placeholder="Ask anything: 'Explain microservices with sequence diagram', 'Draw a class diagram for library system', 'State machine for order processing'..."></textarea>
+            <button id="askButton" class="btn-ask"><i class="fas fa-magic"></i> Generate</button>
+        </div>
+        <div class="customization-bar">
+            <div class="style-options">
+                <button id="styleConcise" class="style-btn"><i class="fas fa-compress"></i> Summarize</button>
+                <button id="styleDetailed" class="style-btn active"><i class="fas fa-expand"></i> Elaborate</button>
+                <button id="styleSimple" class="style-btn"><i class="fas fa-child"></i> Simple</button>
+            </div>
+            <div class="uml-type-selector">
+                <label><i class="fas fa-diagram-project"></i> UML Type:</label>
+                <select id="umlTypeSelect">
+                    <option value="auto">✨ Auto (AI decides)</option>
+                    <option value="classDiagram">📊 Class Diagram</option>
+                    <option value="sequenceDiagram">🔄 Sequence Diagram</option>
+                    <option value="stateDiagram-v2">⚙️ State Machine</option>
+                    <option value="flowchart">📈 Flowchart / Activity</option>
+                    <option value="erDiagram">🗄️ ER Diagram</option>
+                </select>
+            </div>
+        </div>
+        <div class="example-prompts">
+            <span class="example-chip" data-example="Explain e-commerce checkout with UML activity diagram">🛒 Checkout activity</span>
+            <span class="example-chip" data-example="Draw sequence diagram for user authentication with JWT">🔐 JWT sequence</span>
+            <span class="example-chip" data-example="State diagram for a traffic light system">🚦 Traffic light state</span>
+            <span class="example-chip" data-example="Class diagram for a banking system with Account, Customer, Transaction">🏦 Banking class</span>
+        </div>
+    </div>
+
+    <!-- DUAL CUSTOMIZATION PANELS (Text + UML) -->
+    <div class="dual-customizer">
+        <!-- Text Answer Customizer -->
+        <div class="customizer-card">
+            <h4><i class="fas fa-pen-fancy"></i> Text Answer Style</h4>
+            <div class="customizer-row">
+                <label>Font Family:</label>
+                <select id="textFontFamily">
+                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'Georgia', serif">Georgia</option>
+                    <option value="'Courier New', monospace">Monospace</option>
+                    <option value="'Arial', sans-serif">Arial</option>
+                </select>
+            </div>
+            <div class="customizer-row">
+                <label>Font Size:</label>
+                <input type="range" id="textFontSize" min="12" max="24" value="15" step="1">
+                <span id="fontSizeValue">15px</span>
+            </div>
+            <div class="customizer-row">
+                <label>Text Color:</label>
+                <input type="color" id="textColor" value="#11212e">
+                <div class="color-box" style="background:#11212e;" id="textColorPreview"></div>
+            </div>
+            <div class="customizer-row">
+                <label>Line Height:</label>
+                <input type="range" id="textLineHeight" min="1.2" max="2.2" step="0.05" value="1.6">
+                <span id="lineHeightValue">1.6</span>
+            </div>
+            <div class="customizer-row">
+                <label>Bg Color:</label>
+                <input type="color" id="textBgColor" value="#ffffff">
+            </div>
+            <button id="resetTextStyle" class="export-btn" style="margin-top:5px;"><i class="fas fa-undo-alt"></i> Reset Text Style</button>
+        </div>
+
+        <!-- UML Diagram Customizer -->
+        <div class="customizer-card">
+            <h4><i class="fas fa-chalkboard"></i> UML Diagram Style</h4>
+            <div class="customizer-row">
+                <label>Theme:</label>
+                <select id="mermaidTheme">
+                    <option value="base">Base</option>
+                    <option value="forest">Forest</option>
+                    <option value="dark">Dark</option>
+                    <option value="neutral">Neutral</option>
+                </select>
+            </div>
+            <div class="customizer-row">
+                <label>Primary Color:</label>
+                <input type="color" id="primaryColor" value="#2c6e9e">
+                <div class="color-box" style="background:#2c6e9e;" id="primaryPreview"></div>
+            </div>
+            <div class="customizer-row">
+                <label>Curve Style:</label>
+                <select id="flowCurve">
+                    <option value="basis">Basis</option>
+                    <option value="linear">Linear</option>
+                    <option value="cardinal">Cardinal</option>
+                </select>
+            </div>
+            <div class="customizer-row">
+                <label>Diagram Bg:</label>
+                <input type="color" id="diagramBg" value="#fbfeff">
+            </div>
+            <button id="applyUMLStyle" class="export-btn" style="margin-top:5px;"><i class="fas fa-sync-alt"></i> Apply UML Style</button>
+        </div>
+    </div>
+
+    <!-- Answer Panels -->
+    <div class="answer-zone">
+        <div class="text-answer-panel" id="textAnswerPanel">
+            <div class="panel-title">
+                <span><i class="fas fa-robot"></i> AI Answer</span>
+                <div class="export-buttons">
+                    <button id="exportPDFBtn" class="export-btn"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button id="exportHTMLBtn" class="export-btn"><i class="fas fa-code"></i> HTML</button>
+                </div>
+            </div>
+            <div id="answerText" class="answer-content"><div style="color:#8ba3bc;">✨ Ask a question, choose UML type, then customize both text and diagram styles live.</div></div>
+        </div>
+        <div class="uml-panel" id="umlPanel">
+            <div class="panel-title">
+                <span><i class="fas fa-diagram-project"></i> UML Diagram (<span id="currentUMLTypeLabel">Auto</span>)</span>
+                <button id="copyUMLBtn" class="export-btn"><i class="fas fa-copy"></i> Copy Code</button>
+            </div>
+            <div id="umlContainer" class="uml-diagram"><div style="color:#8ba3bc;"><i class="fas fa-chalkboard-user"></i> Diagram will appear here</div></div>
+        </div>
+    </div>
+    
+    <!-- Footer with "All The Best" message -->
+    <footer>
+        <i class="fas fa-star"></i> All The Best <i class="fas fa-star"></i>
+    </footer>
+</div>
+
+<script>
+    // ---------- Global State ----------
+    let storedApiKey = localStorage.getItem('openrouter_api_key') || '';
+    let currentUMLCode = "";
+    let currentAnswerHTML = "";
+    let currentUMLType = "auto";
+    let currentRawText = ""; // store raw unformatted text for style re-application
+
+    // DOM Elements
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const apiStatusDiv = document.getElementById('apiStatus');
+    const askButton = document.getElementById('askButton');
+    const questionInput = document.getElementById('questionInput');
+    const answerTextDiv = document.getElementById('answerText');
+    const umlContainer = document.getElementById('umlContainer');
+    
+    // Text customization elements
+    const textFontFamily = document.getElementById('textFontFamily');
+    const textFontSize = document.getElementById('textFontSize');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    const textColor = document.getElementById('textColor');
+    const textColorPreview = document.getElementById('textColorPreview');
+    const textLineHeight = document.getElementById('textLineHeight');
+    const lineHeightValue = document.getElementById('lineHeightValue');
+    const textBgColor = document.getElementById('textBgColor');
+    const resetTextStyle = document.getElementById('resetTextStyle');
+    
+    // UML customization
+    const mermaidTheme = document.getElementById('mermaidTheme');
+    const primaryColor = document.getElementById('primaryColor');
+    const primaryPreview = document.getElementById('primaryPreview');
+    const flowCurve = document.getElementById('flowCurve');
+    const diagramBg = document.getElementById('diagramBg');
+    const applyUMLStyle = document.getElementById('applyUMLStyle');
+
+    // API Key Handling
+    if (storedApiKey) { apiKeyInput.value = '••••••••••••••••'; apiStatusDiv.innerHTML = '<i class="fas fa-check-circle" style="color:#2b7a3e;"></i> Key ready'; }
+    else apiStatusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Add OpenRouter key';
+    saveApiKeyBtn.addEventListener('click', () => {
+        let newKey = apiKeyInput.value.trim();
+        if (!newKey || newKey === '••••••••••••••••') { alert('Please enter a valid OpenRouter API key'); return; }
+        localStorage.setItem('openrouter_api_key', newKey);
+        storedApiKey = newKey;
+        apiKeyInput.value = '••••••••••••••••';
+        apiStatusDiv.innerHTML = '<i class="fas fa-check-circle" style="color:#2b7a3e;"></i> Key configured';
+    });
+
+    // Style handling (Concise/Elaborate/Simple)
+    let currentStyle = 'elaborate';
+    const styleConcise = document.getElementById('styleConcise'), styleDetailed = document.getElementById('styleDetailed'), styleSimple = document.getElementById('styleSimple');
+    function setActiveStyle(activeBtn) { [styleConcise, styleDetailed, styleSimple].forEach(btn => btn.classList.remove('active')); activeBtn.classList.add('active'); }
+    styleConcise.addEventListener('click', () => { currentStyle = 'concise'; setActiveStyle(styleConcise); });
+    styleDetailed.addEventListener('click', () => { currentStyle = 'elaborate'; setActiveStyle(styleDetailed); });
+    styleSimple.addEventListener('click', () => { currentStyle = 'simple'; setActiveStyle(styleSimple); });
+
+    // UML Type selector
+    const umlTypeSelect = document.getElementById('umlTypeSelect');
+    umlTypeSelect.addEventListener('change', (e) => { currentUMLType = e.target.value; document.getElementById('currentUMLTypeLabel').innerText = currentUMLType === 'auto' ? 'Auto' : currentUMLType.replace('-v2','').toUpperCase(); });
+
+    // ---------- Text Styling Functions (Live) ----------
+    function applyTextStyles() {
+        const fontFamily = textFontFamily.value;
+        const fontSize = textFontSize.value + 'px';
+        const color = textColor.value;
+        const lineHeight = textLineHeight.value;
+        const bgColor = textBgColor.value;
+        answerTextDiv.style.fontFamily = fontFamily;
+        answerTextDiv.style.fontSize = fontSize;
+        answerTextDiv.style.color = color;
+        answerTextDiv.style.lineHeight = lineHeight;
+        answerTextDiv.style.backgroundColor = bgColor;
+        fontSizeValue.innerText = textFontSize.value + 'px';
+        lineHeightValue.innerText = lineHeight;
+        textColorPreview.style.backgroundColor = color;
+    }
+    
+    function resetTextStyles() {
+        textFontFamily.value = "'Inter', sans-serif";
+        textFontSize.value = "15";
+        textColor.value = "#11212e";
+        textLineHeight.value = "1.6";
+        textBgColor.value = "#ffffff";
+        applyTextStyles();
+    }
+    
+    textFontFamily.addEventListener('change', applyTextStyles);
+    textFontSize.addEventListener('input', applyTextStyles);
+    textColor.addEventListener('input', applyTextStyles);
+    textLineHeight.addEventListener('input', applyTextStyles);
+    textBgColor.addEventListener('input', applyTextStyles);
+    resetTextStyle.addEventListener('click', resetTextStyles);
+    
+    // Initialize text styles on page load
+    applyTextStyles();
+
+    // ---------- UML Styling & Rendering (Dynamic) ----------
+    async function renderUMLWithCurrentConfig(umlCode, diagramTypeLabel = null) {
+        if (!umlCode || umlCode.trim() === "") {
+            umlContainer.innerHTML = `<div class="error-msg">⚠️ No UML code to render.</div>`;
+            return;
+        }
+        const theme = mermaidTheme.value;
+        const primary = primaryColor.value;
+        const curve = flowCurve.value;
+        const bgColor = diagramBg.value;
+        
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: theme,
+            themeVariables: {
+                'primaryColor': primary,
+                'primaryBorderColor': '#1a4668',
+                'primaryTextColor': '#102a3c',
+                'lineColor': primary,
+                'fontFamily': 'Inter, sans-serif',
+                'background': bgColor
+            },
+            flowchart: { useMaxWidth: true, curve: curve, htmlLabels: true },
+            sequence: { useMaxWidth: true, diagramMarginX: 50 },
+            securityLevel: 'loose'
+        });
+        
+        const uid = `uml-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const wrapper = document.createElement('div');
+        wrapper.id = uid;
+        const pre = document.createElement('pre');
+        pre.className = 'mermaid';
+        pre.textContent = umlCode;
+        wrapper.appendChild(pre);
+        umlContainer.innerHTML = '';
+        umlContainer.appendChild(wrapper);
+        try {
+            await mermaid.run({ nodes: document.querySelectorAll(`#${uid} .mermaid`), suppressErrors: false });
+            if (diagramTypeLabel) document.getElementById('currentUMLTypeLabel').innerText = diagramTypeLabel;
+            else document.getElementById('currentUMLTypeLabel').innerText = currentUMLType === 'auto' ? 'Auto' : currentUMLType;
+        } catch (err) {
+            console.warn(err);
+            umlContainer.innerHTML = `<div class="error-msg"><i class="fas fa-code-branch"></i> UML syntax error: ${err.message.substring(0, 100)}<br><pre style="font-size:11px;">${escapeHtml(umlCode.substring(0, 400))}</pre></div>`;
+        }
+    }
+    
+    applyUMLStyle.addEventListener('click', () => {
+        if (currentUMLCode) {
+            renderUMLWithCurrentConfig(currentUMLCode);
+        } else {
+            alert("No UML diagram generated yet. Please ask a question first.");
+        }
+    });
+    
+    primaryColor.addEventListener('input', (e) => { primaryPreview.style.backgroundColor = e.target.value; });
+    diagramBg.addEventListener('input', () => { if(currentUMLCode) renderUMLWithCurrentConfig(currentUMLCode); });
+    mermaidTheme.addEventListener('change', () => { if(currentUMLCode) renderUMLWithCurrentConfig(currentUMLCode); });
+    flowCurve.addEventListener('change', () => { if(currentUMLCode) renderUMLWithCurrentConfig(currentUMLCode); });
+
+    // ---------- OpenRouter AI Integration ----------
+    async function callOpenRouterWithUML(question, style, forcedUMLType) {
+        if (!storedApiKey) throw new Error('OpenRouter API key missing');
+        let stylePrompt = "";
+        if (style === 'concise') stylePrompt = "Be very concise (max 3 paragraphs).";
+        else if (style === 'simple') stylePrompt = "Explain in simple, beginner-friendly terms with analogies.";
+        else stylePrompt = "Provide a detailed, thorough explanation with rich context and examples.";
+        
+        let umlDirective = "";
+        if (forcedUMLType !== 'auto') {
+            let typeName = forcedUMLType;
+            if (typeName === 'classDiagram') umlDirective = `Generate a valid Mermaid ${typeName} (class diagram) with proper relationships.`;
+            else if (typeName === 'sequenceDiagram') umlDirective = `Generate a valid Mermaid ${typeName} (sequence diagram) showing interactions.`;
+            else if (typeName === 'stateDiagram-v2') umlDirective = `Generate a valid Mermaid stateDiagram-v2 (state machine).`;
+            else if (typeName === 'flowchart') umlDirective = `Generate a valid Mermaid flowchart (flowchart TD).`;
+            else if (typeName === 'erDiagram') umlDirective = `Generate a valid Mermaid erDiagram.`;
+            else umlDirective = `Generate a proper Mermaid diagram of type ${typeName}.`;
+        } else {
+            umlDirective = `Choose the most suitable Mermaid diagram type (classDiagram, sequenceDiagram, stateDiagram-v2, flowchart, erDiagram) based on the question.`;
+        }
+
+        const systemMsg = `You are an expert UML architect. ${stylePrompt} ${umlDirective}
+        Your answer must include:
+        1. TEXTUAL EXPLANATION (plain text, no markdown formatting inside except line breaks).
+        2. A Mermaid UML diagram inside \`\`\`mermaid ... \`\`\` block. Ensure correct syntax.`;
+
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${storedApiKey}`, 'HTTP-Referer': window.location.origin },
+            body: JSON.stringify({
+                model: 'openai/gpt-3.5-turbo',
+                messages: [{ role: 'system', content: systemMsg }, { role: 'user', content: question }],
+                temperature: style === 'concise' ? 0.3 : 0.65,
+                max_tokens: 2400
+            })
+        });
+        if (!response.ok) {
+            let errMsg = `HTTP ${response.status}`;
+            try { const errJson = await response.json(); errMsg = errJson.error?.message || errMsg; } catch(e) {}
+            throw new Error(errMsg);
+        }
+        const data = await response.json();
+        return data.choices[0]?.message?.content;
+    }
+
+    function extractUMLAndText(fullResponse) {
+        const regex = /```mermaid\n([\s\S]*?)```/i;
+        let match = fullResponse.match(regex);
+        let uml = '';
+        let text = fullResponse;
+        if (match && match[1]) {
+            uml = match[1].trim();
+            text = fullResponse.replace(/```mermaid\n[\s\S]*?```/i, '').trim();
+        } else {
+            const keywords = ['classDiagram', 'sequenceDiagram', 'stateDiagram-v2', 'flowchart', 'erDiagram'];
+            for (let kw of keywords) {
+                let idx = fullResponse.indexOf(kw);
+                if (idx !== -1) {
+                    let endIdx = fullResponse.indexOf('\n\n', idx);
+                    if (endIdx === -1) endIdx = fullResponse.length;
+                    uml = fullResponse.substring(idx, endIdx).trim();
+                    text = fullResponse.substring(0, idx).trim();
+                    break;
+                }
+            }
+        }
+        if (!uml) uml = `flowchart TD\n    A[Question] --> B[AI Analysis]`;
+        return { cleanText: text, umlCode: uml };
+    }
+
+    function formatPlainTextForDisplay(text) {
+        let escaped = escapeHtml(text);
+        escaped = escaped.replace(/\n/g, '<br>');
+        return escaped;
+    }
+    
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+
+    // Main generate function
+    async function generateAnswer() {
+        const question = questionInput.value.trim();
+        if (!question) { alert('Please enter a question'); return; }
+        if (!storedApiKey) { alert('Set OpenRouter API key first'); return; }
+        
+        const selectedUML = umlTypeSelect.value;
+        currentUMLType = selectedUML;
+        document.getElementById('currentUMLTypeLabel').innerText = selectedUML === 'auto' ? 'Auto' : selectedUML.replace('-v2','').toUpperCase();
+        
+        answerTextDiv.innerHTML = `<div class="loader"><i class="fas fa-spinner fa-pulse"></i> AI generating (${currentStyle} | UML: ${selectedUML})...</div>`;
+        umlContainer.innerHTML = `<div class="loader"><i class="fas fa-cogs fa-pulse"></i> Preparing diagram...</div>`;
+        askButton.disabled = true;
+        
+        try {
+            const aiResponse = await callOpenRouterWithUML(question, currentStyle, selectedUML);
+            const { cleanText, umlCode } = extractUMLAndText(aiResponse);
+            currentUMLCode = umlCode;
+            currentRawText = cleanText;
+            answerTextDiv.innerHTML = `<div class="answer-content">${formatPlainTextForDisplay(cleanText)}</div>`;
+            applyTextStyles();
+            await renderUMLWithCurrentConfig(umlCode, selectedUML === 'auto' ? 'Auto' : selectedUML);
+        } catch (err) {
+            answerTextDiv.innerHTML = `<div class="error-msg">❌ ${escapeHtml(err.message)}</div>`;
+            umlContainer.innerHTML = `<div class="error-msg">UML generation failed: ${escapeHtml(err.message)}</div>`;
+        } finally {
+            askButton.disabled = false;
+        }
+    }
+
+    // Export functions
+    function exportAsPDF() {
+        const element = document.getElementById('textAnswerPanel');
+        const originalPadding = element.style.padding;
+        element.style.padding = '1.5rem';
+        html2pdf().set({ margin: [0.5,0.5,0.5,0.5], filename: 'answre_answer.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(element).save().then(() => { element.style.padding = originalPadding; });
+    }
+    function exportAsHTML() {
+        const answerContent = document.getElementById('answerText').innerHTML;
+        const umlContent = document.getElementById('umlContainer').innerHTML;
+        const styles = Array.from(document.querySelectorAll('style')).map(s => s.innerHTML).join(' ');
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Answre Box Export</title><style>body{font-family:Inter,sans-serif;padding:2rem;max-width:1100px;margin:auto;background:#f5f9ff;} .card{background:white;border-radius:1.5rem;padding:1.5rem;margin-bottom:1rem;} ${styles}</style></head><body><div class="card"><h2>📄 AI Answer</h2>${answerContent}</div><div class="card"><h2>📊 UML Diagram</h2>${umlContent}</div></body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'answre_export.html'; link.click(); URL.revokeObjectURL(link.href);
+    }
+    function copyUMLCode() { if (currentUMLCode) { navigator.clipboard.writeText(currentUMLCode); alert('UML code copied!'); } else alert('No UML generated yet.'); }
+
+    // Event listeners
+    document.getElementById('askButton').addEventListener('click', generateAnswer);
+    document.getElementById('exportPDFBtn').addEventListener('click', exportAsPDF);
+    document.getElementById('exportHTMLBtn').addEventListener('click', exportAsHTML);
+    document.getElementById('copyUMLBtn').addEventListener('click', copyUMLCode);
+    document.querySelectorAll('.example-chip').forEach(chip => {
+        chip.addEventListener('click', () => { questionInput.value = chip.getAttribute('data-example'); generateAnswer(); });
+    });
+    
+    // Initialize previews
+    primaryPreview.style.backgroundColor = primaryColor.value;
+    applyTextStyles();
+</script>
+</body>
+</html>
